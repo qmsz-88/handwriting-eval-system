@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#4a90d9">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <title>书写智能评价系统 · 双端入口</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { background: linear-gradient(180deg, #f5f7fa 0%, #eef2f7 100%); min-height: 100vh; }
+    .landing-wrap {
+      max-width: 420px; margin: 0 auto; padding: 48px 24px 40px;
+      display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+    }
+    .landing-logo { text-align: center; margin-bottom: 36px; }
+    .landing-logo .big-icon {
+      width: 88px; height: 88px; margin: 0 auto 16px; border-radius: 22px;
+      background: linear-gradient(135deg, #4a90d9, #534AB7);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 44px; color: #fff; font-weight: 700;
+      box-shadow: 0 8px 24px rgba(74, 144, 217, 0.35);
+    }
+    .landing-logo h1 { font-size: 22px; color: #222; margin-bottom: 6px; }
+    .landing-logo p { font-size: 13px; color: #888; }
+    .app-entry-grid { width: 100%; display: flex; flex-direction: column; gap: 16px; }
+    .app-entry {
+      display: flex; align-items: center; gap: 16px; padding: 20px 18px;
+      border-radius: 16px; background: #fff; text-decoration: none;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06); transition: transform .15s;
+    }
+    .app-entry:active { transform: scale(0.98); }
+    .app-entry .entry-icon {
+      width: 56px; height: 56px; border-radius: 14px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 28px; color: #fff;
+    }
+    .app-entry.student .entry-icon { background: linear-gradient(135deg, #1D9E75, #0F6E56); }
+    .app-entry.parent .entry-icon { background: linear-gradient(135deg, #7F77DD, #534AB7); }
+    .app-entry .entry-info h2 { font-size: 17px; color: #222; margin-bottom: 4px; }
+    .app-entry .entry-info p { font-size: 12px; color: #999; line-height: 1.5; }
+    .app-entry .entry-arrow { margin-left: auto; font-size: 20px; color: #ccc; }
+    .landing-flow {
+      margin-top: 32px; width: 100%; background: #fff; border-radius: 16px;
+      padding: 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .landing-flow h3 { font-size: 14px; color: #333; margin-bottom: 10px; }
+    .landing-flow ol { padding-left: 20px; margin: 0; }
+    .landing-flow li { font-size: 12px; color: #777; line-height: 1.9; }
+    .landing-foot { margin-top: 24px; font-size: 11px; color: #bbb; text-align: center; line-height: 1.8; }
+  </style>
+</head>
+<body>
+  <div class="landing-wrap">
+    <div class="landing-logo">
+      <div class="big-icon">书</div>
+      <h1>中小学生书写智能评价</h1>
+      <p>AI双报告 · 家长追溯 · 成长积分</p>
+    </div>
+
+    <div class="app-entry-grid">
+      <a class="app-entry student" href="/student.html">
+        <div class="entry-icon">📖</div>
+        <div class="entry-info">
+          <h2>学生端 App</h2>
+          <p>学号登录 · 自主拍照检测 · AI双报告<br>练字打卡 · 查看家长评价</p>
+        </div>
+        <div class="entry-arrow">›</div>
+      </a>
+      <a class="app-entry parent" href="/parent.html">
+        <div class="entry-icon">👨‍👩‍👧</div>
+        <div class="entry-info">
+          <h2>家长端 App</h2>
+          <p>注册孩子档案 · 全程追溯 · 打分评语<br>奖惩积分 · 成长趋势统计</p>
+        </div>
+        <div class="entry-arrow">›</div>
+      </a>
+    </div>
+
+    <div class="landing-flow">
+      <h3>🚀 使用流程</h3>
+      <ol>
+        <li>家长端登录 → 添加孩子档案（姓名、性别、<b>出生年月日</b>、年级）</li>
+        <li>系统自动生成孩子专属的<b>学号 + 密码</b></li>
+        <li>孩子用学号在<b>学生端App</b>独立登录使用</li>
+        <li>学生提交的检测记录<b>自动实时同步</b>到家长端</li>
+        <li>家长端查看、评价、打分，形成成长闭环</li>
+      </ol>
+    </div>
+
+    <div class="landing-foot">
+      学生记录永久存档不可删除 · 学生无删除/修改权限<br>
+      可分别将「学生端」「家长端」添加到手机主屏幕独立使用
+    </div>
+  </div>
+</body>
+</html>

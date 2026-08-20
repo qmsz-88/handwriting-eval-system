@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="书写评价·学生端">
+  <meta name="theme-color" content="#1D9E75">
+  <link rel="manifest" href="/manifest-student.json">
+  <link rel="apple-touch-icon" href="/icons/icon-student-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-student-192.png">
+  <title>书写评价 · 学生端</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script>window.APP_MODE = 'student';</script>
+</head>
+<body>
+  <div id="app">
+    <!-- 学生登录页 -->
+    <div id="page-login" class="page active">
+      <div class="login-container">
+        <div class="login-logo">
+          <div class="logo-icon" style="background:linear-gradient(135deg,#1D9E75,#0F6E56)">📖</div>
+          <h1>书写评价 · 学生端</h1>
+          <p>我是学生，独立登录我的书写学习空间</p>
+        </div>
+        <div class="login-form">
+          <div class="input-group">
+            <input type="text" id="login-code" placeholder="请输入学号（由家长提供）">
+          </div>
+          <div class="input-group" style="margin-top:12px">
+            <input type="password" id="login-pwd" placeholder="请输入密码">
+          </div>
+          <button class="btn btn-primary btn-block" id="btn-login" style="background:linear-gradient(135deg,#1D9E75,#0F6E56)">学号登录</button>
+          <p class="login-tip">学号和密码由家长在「家长端App」注册孩子档案时生成</p>
+        </div>
+        <div class="login-features">
+          <div class="feature-item"><span class="feature-icon">📸</span><span>自主拍照检测</span></div>
+          <div class="feature-item"><span class="feature-icon">🤖</span><span>AI双报告即时生成</span></div>
+          <div class="feature-item"><span class="feature-icon">📅</span><span>每日练字打卡</span></div>
+          <div class="feature-item"><span class="feature-icon">🏆</span><span>查看家长评价与积分</span></div>
+        </div>
+        <div style="text-align:center;padding:12px 0;font-size:12px;color:var(--text-4)">
+          我是家长？请使用 <a href="/parent.html" style="color:var(--primary)">家长端App</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 主应用 -->
+    <div id="main-app" class="main-app" style="display:none;">
+      <!-- 顶部栏 -->
+      <div class="app-header">
+        <div class="header-left" id="header-child-switcher">
+          <span class="child-avatar" id="current-child-avatar">👦</span>
+          <span class="child-name" id="current-child-name">未登录</span>
+          <span class="switch-icon">▼</span>
+        </div>
+        <div class="header-right">
+          <span style="font-size:12px;font-weight:600;color:#0F6E56;background:#E1F5EE;padding:4px 12px;border-radius:12px">学生端</span>
+        </div>
+      </div>
+
+      <!-- 页面容器 -->
+      <div class="page-container" id="page-container">
+        <!-- 页面通过JS动态渲染 -->
+      </div>
+
+      <!-- 底部导航栏 -->
+      <div class="tab-bar" id="tab-bar">
+        <!-- 通过JS动态渲染 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗容器 -->
+  <div id="modal-container"></div>
+
+  <!-- 图片预览 -->
+  <div id="image-preview" class="image-preview" style="display:none;">
+    <div class="preview-close" onclick="closePreview()">✕</div>
+    <img id="preview-img" src="" alt="预览">
+  </div>
+
+  <!-- Toast提示 -->
+  <div id="toast" class="toast"></div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    // 注册 Service Worker（PWA 安装支持）
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => {
+          console.log('SW registration failed:', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

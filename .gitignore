@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Database
+data/*.json
+!data/.gitkeep
+
+# Logs
+*.log
+server.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+android/app/build/
+ios/Pods/
+ios/build/
+*.apk
+*.ipa
+
+# IDE
+.vscode/
+.idea/
+
+# Test files
+test-dual.js

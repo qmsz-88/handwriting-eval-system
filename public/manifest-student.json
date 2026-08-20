@@ -1,0 +1,40 @@
+{
+  "name": "书写评价·学生端",
+  "short_name": "学生端",
+  "description": "中小学生字体书写智能评价 - 学生端App：学号登录、自主拍照检测、AI双报告、练字打卡",
+  "start_url": "/student.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1D9E75",
+  "theme_color": "#1D9E75",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "/icons/icon-student-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-student-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "日常作业检测",
+      "short_name": "作业检测",
+      "url": "/student.html",
+      "icons": [{ "src": "/icons/icon-student-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "每日打卡",
+      "short_name": "打卡",
+      "url": "/student.html",
+      "icons": [{ "src": "/icons/icon-student-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
