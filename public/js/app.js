@@ -146,7 +146,7 @@ async function tryRestoreSession() {
       if (res.status !== 200 || data.code !== 0) { clearSession(); return false; }
       state.sessionType = 'parent';
       state.studentToken = null;
-      state.user = { user_id: raw.userId };
+      state.user = Object.assign({}, data.data || {}, { user_id: raw.userId });
       return true;
     }
   } catch (e) {
@@ -321,6 +321,7 @@ async function handleParentLogin() {
     state.studentToken = null;
     saveSession();
     hideLoading();
+    showToast(`欢迎回来，${res.data.nickname || nickname}（家长）`);
     await enterMainApp();
   } catch (e) {
     hideLoading();
@@ -1094,8 +1095,22 @@ function renderParentProfilePage() {
   const container = document.getElementById('page-container');
   const child = state.currentChild;
 
+  const parentName = (state.user && state.user.nickname) ? state.user.nickname : '家长';
+
   container.innerHTML = `
     <div class="page-content">
+      <!-- 家长身份卡（首次设置名称后显示家长标签） -->
+      <div class="card" style="display:flex;align-items:center;gap:14px;padding:16px 18px;margin-bottom:12px;background:linear-gradient(135deg,#f3f2ff,#e7e6ff)">
+        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#7F77DD,#534AB7);display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff">👤</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:16px;font-weight:600;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">${parentName}</div>
+            <span style="font-size:11px;font-weight:600;color:#fff;background:linear-gradient(135deg,#7F77DD,#534AB7);padding:2px 8px;border-radius:10px">家长</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-3);margin-top:2px">当前账号 · ${state.children.length} 个孩子</div>
+        </div>
+      </div>
+
       <div class="profile-header">
         <div class="profile-avatar">${child ? (child.gender === 'female' ? '👧' : '👦') : '👤'}</div>
         <div class="profile-name">${child ? child.name : '未添加孩子'}</div>
@@ -1759,6 +1774,7 @@ function renderAddChildPage() {
             <div style="display:flex;flex-direction:column;gap:6px">
               <button class="btn btn-outline btn-sm" onclick="switchChild(${c.id})">${c.id === state.currentChild?.id ? '当前' : '切换'}</button>
               <button class="btn btn-outline btn-sm" onclick="showEditChildModal(${c.id})">编辑</button>
+              <button class="btn btn-sm" style="color:#e74c3c;border:1px solid #e74c3c;background:#fff" onclick="confirmDeleteChild(${c.id})">删除</button>
             </div>
           </div>
         `).join('')}
@@ -1930,6 +1946,53 @@ function switchChild(childId) {
     closeModal();
     navigateTo(state.mode === 'student' ? 'home' : 'trace');
     showToast(`已切换到${child.name}`);
+  }
+}
+
+// 删除孩子档案确认弹窗
+function confirmDeleteChild(childId) {
+  const child = state.children.find(c => c.id === childId);
+  if (!child) return;
+  const html = `
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div class="modal-title">确认删除档案？</div>
+        <div class="modal-close" onclick="closeModal()">✕</div>
+      </div>
+      <div class="modal-section">
+        <p style="font-size:14px;color:var(--text-2);line-height:1.6">
+          即将删除 <b>${child.name}</b> 的档案。删除后：
+        </p>
+        <ul style="font-size:13px;color:var(--text-3);line-height:1.8;margin:10px 0 0 18px">
+          <li>孩子将无法再用学号登录学生端</li>
+          <li>已提交的书写记录仍会保留在家长端</li>
+          <li>可随时重新添加新档案</li>
+        </ul>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-outline btn-block" onclick="closeModal()" style="flex:1">取消</button>
+        <button class="btn btn-block" onclick="deleteChild(${child.id})" style="flex:1;background:#e74c3c;color:#fff;border-color:#e74c3c">确认删除</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+}
+
+async function deleteChild(childId) {
+  try {
+    showLoading('删除中...');
+    await API.del(`/children/${childId}`);
+    hideLoading();
+    closeModal();
+    showToast('已删除档案');
+    if (state.currentChild && state.currentChild.id === childId) {
+      state.currentChild = null;
+    }
+    await loadChildren();
+    navigateTo('addchild');
+  } catch (e) {
+    hideLoading();
+    showToast(e.message);
   }
 }
 

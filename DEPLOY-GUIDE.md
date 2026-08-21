@@ -16,6 +16,7 @@
 | Node.js | v20.18.1（安装于 /usr/local/node） |
 | 应用目录 | /opt/handwriting（数据保存在 /opt/handwriting/data，**重启不丢失**） |
 | 验证结果 | ✅ 健康检查/首页/学生端/家长端/家长登录/孩子注册/学生登录 全部通过 |
+| 最新版本 | v2.0 — 双端 APK 独立打包，可共存安装；LOGO 带端别标签；家长端支持删除孩子档案、显示家长标签 |
 
 ### 服务器运维速查（SSH 登录后）
 
@@ -145,3 +146,18 @@ openssl x509 -in /opt/handwriting/certs/server.crt -noout -dates
 systemctl restart handwriting
 # 注意：更换证书后 APK 需重新打包内置新证书（res/raw/hw_server_cert.pem）
 ```
+
+## 双端 APK 说明（v2.0）
+
+| 类型 | applicationId | 应用名称 | 默认入口 | 功能 |
+|---|---|---|---|---|
+| 学生端 APK | `com.family.hwstudent` | 书写评价·学生端 | `student.html` | 学号登录、拍照检测、AI双报告、打卡 |
+| 家长端 APK | `com.family.hwparent` | 书写评价·家长端 | `parent.html` | 家长登录、添加/管理/删除孩子、查看记录、打分 |
+
+**同一手机可同时安装学生端和家长端两个独立 App**，两个应用图标、名称、LOGO 标签均不相同。
+
+**构建产物**：GitHub Actions 每次推送后自动产出两个 artifact：
+- `handwriting-eval-student-apk`
+- `handwriting-eval-parent-apk`
+
+APK 打包脚本：`.github/workflows/build-android.yml`；图标/启动屏/flavor 资源：`generate-dual-icons.py`。

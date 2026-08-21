@@ -1,5 +1,5 @@
-# 云端构建 Android APK —— 无需本机安装 Java / Android SDK
-# 推送到 GitHub 后 Actions 自动构建，生成可下载的 app-debug.apk
+# 云端构建 Android APK —— 学生端 + 家长端双包
+# 两个包使用不同 applicationId，可在同一手机共存安装
 name: Build Android APK
 
 on:
@@ -25,7 +25,7 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # Android 图标/启动屏已本地生成并提交到仓库（避免 CI 无中文字体降级）
+      # Android 图标/启动屏/双端 flavor 资源已本地生成并提交到仓库（避免 CI 无中文字体降级）
 
       - name: 安装依赖
         run: npm install
@@ -38,16 +38,32 @@ jobs:
           yes | sdkmanager --licenses > /dev/null || true
           sdkmanager "platforms;android-33" "build-tools;33.0.2" "platform-tools" || true
 
-      - name: 构建 Debug APK
+      - name: 构建学生端 Debug APK
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          echo "window.APP_VARIANT = 'student';" > app/src/main/assets/public/variant.js
+          ./gradlew assembleStudentDebug --no-daemon
 
-      - name: 上传 APK 构建产物
+      - name: 构建家长端 Debug APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          echo "window.APP_VARIANT = 'parent';" > app/src/main/assets/public/variant.js
+          ./gradlew assembleParentDebug --no-daemon
+
+      - name: 上传学生端 APK
         uses: actions/upload-artifact@v4
         with:
-          name: handwriting-eval-android-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: handwriting-eval-student-apk
+          path: android/app/build/outputs/apk/student/debug/app-student-debug.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: 上传家长端 APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: handwriting-eval-parent-apk
+          path: android/app/build/outputs/apk/parent/debug/app-parent-debug.apk
           if-no-files-found: error
           retention-days: 30

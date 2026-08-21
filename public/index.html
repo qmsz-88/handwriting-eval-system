@@ -52,6 +52,14 @@
     .landing-flow li { font-size: 12px; color: #777; line-height: 1.9; }
     .landing-foot { margin-top: 24px; font-size: 11px; color: #bbb; text-align: center; line-height: 1.8; }
   </style>
+  <script src="/variant.js"></script>
+  <script>
+    (function() {
+      var v = window.APP_VARIANT || 'full';
+      if (v === 'student') { location.replace('student.html'); return; }
+      if (v === 'parent') { location.replace('parent.html'); return; }
+    })();
+  </script>
 </head>
 <body>
   <div class="landing-wrap">
