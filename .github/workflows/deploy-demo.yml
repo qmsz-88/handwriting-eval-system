@@ -1,0 +1,74 @@
+name: 临时公网演示环境
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/deploy-demo.yml'
+      - 'server.js'
+      - 'db.js'
+      - 'ai-evaluator.js'
+      - 'public/**'
+      - 'package.json'
+
+jobs:
+  tunnel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 195
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 安装精简依赖
+        run: |
+          npm install --no-save --no-audit --no-fund express cors multer
+
+      - name: 启动服务器
+        run: |
+          node server.js > server.log 2>&1 &
+          sleep 3
+          echo "健康检查: $(curl -s http://localhost:3000/api/health)"
+
+      - name: 启动 Cloudflared 公网隧道
+        run: |
+          curl -sL -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+          chmod +x cloudflared
+          ./cloudflared tunnel --url http://localhost:3000 --no-autoupdate > tunnel.log 2>&1 &
+          URL=""
+          for i in $(seq 1 40); do
+            URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' tunnel.log | head -1)
+            [ -n "$URL" ] && break
+            sleep 2
+          done
+          if [ -z "$URL" ]; then
+            echo "::error::隧道启动失败"
+            tail -30 tunnel.log
+            exit 1
+          fi
+          echo "PUBLIC_URL=$URL" >> "$GITHUB_ENV"
+          echo "## 演示环境已上线" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**公网地址: $URL**" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "本环境为临时演示，约 3 小时后自动关闭。" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 保持运行（3小时演示窗口）
+        run: |
+          echo "演示环境运行中，公网地址: ${{ env.PUBLIC_URL }}"
+          for i in $(seq 1 90); do
+            sleep 120
+            if ! kill -0 $(pgrep -f "node server.js") 2>/dev/null; then
+              echo "服务器进程退出，自动重启..."
+              node server.js >> server.log 2>&1 &
+            fi
+            if ! kill -0 $(pgrep -f "cloudflared tunnel") 2>/dev/null; then
+              echo "隧道进程退出，自动重启..."
+              ./cloudflared tunnel --url http://localhost:3000 --no-autoupdate >> tunnel.log 2>&1 &
+            fi
+          done
+          echo "演示窗口结束，环境关闭。"
