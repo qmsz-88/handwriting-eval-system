@@ -24,7 +24,7 @@ const state = {
 
 // ========== 服务器地址配置 ==========
 // APK 内默认指向公网服务器；浏览器/PWA 同源场景默认相对路径；用户可在登录页「服务器设置」中修改
-const DEFAULT_SERVER_URL = 'https://dropped-vote-isle-obvious.trycloudflare.com';
+const DEFAULT_SERVER_URL = 'http://47.93.40.53';
 
 function isNativeApp() {
   return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
