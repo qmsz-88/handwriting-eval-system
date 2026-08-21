@@ -11,6 +11,9 @@ on:
       - 'public/**'
       - 'package.json'
 
+permissions:
+  contents: write
+
 jobs:
   tunnel:
     runs-on: ubuntu-latest
@@ -51,11 +54,20 @@ jobs:
             exit 1
           fi
           echo "PUBLIC_URL=$URL" >> "$GITHUB_ENV"
+          echo "$URL" > PUBLIC_URL.txt
           echo "## 演示环境已上线" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "**公网地址: $URL**" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "本环境为临时演示，约 3 小时后自动关闭。" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 记录公网地址到仓库
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add PUBLIC_URL.txt
+          git diff --cached --quiet || git commit -m "[skip ci] 更新临时演示环境公网地址"
+          git push origin main
 
       - name: 保持运行（3小时演示窗口）
         run: |
