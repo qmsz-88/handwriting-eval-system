@@ -25,11 +25,7 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: 安装 Python + Pillow
-        run: pip install Pillow
-
-      - name: 生成 Android 图标和启动屏
-        run: python generate-android-assets.py
+      # Android 图标/启动屏已本地生成并提交到仓库（避免 CI 无中文字体降级）
 
       - name: 安装依赖
         run: npm install
