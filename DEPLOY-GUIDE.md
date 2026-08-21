@@ -1,20 +1,31 @@
-# 公网部署指南（正式部署 · Zeabur 免费方案）
+# 公网部署指南（✅ 已正式上线 · 阿里云服务器）
 
 > 目标：把「中小学生字体书写智能评价系统」部署到公网，让手机浏览器 / PWA / APK 都能访问。
-> 方案：**Zeabur 免费计划**（$0/月，免费域名 `xxx.zeabur.app` 自带 HTTPS，香港/新加坡节点国内访问快，从 GitHub 一键部署，零配置）。
+> **当前正式方案：阿里云轻量应用服务器（Ubuntu 22.04）**，地址永久不变、数据永久保存。
 
 ---
 
-## ✅ 部署进度（2026-08-21）
+## ✅ 当前部署状态（2026-08-21 已上线）
 
 | 项目 | 内容 |
 |---|---|
-| **部署平台** | Zeabur 免费计划（正式方案） |
-| **代码就绪** | ✅ `process.env.PORT` 端口适配 + `start: node server.js`，满足一键部署 |
-| **公网地址** | 部署后生成 `xxx.zeabur.app`（免费域名，自带 HTTPS，地址永久不变） |
-| **部署状态** | ⏳ 待执行下方 4 步（注册 → 导入 → 部署 → 生成域名） |
+| **正式公网地址** | **http://47.93.40.53** |
+| 部署平台 | 阿里云轻量应用服务器（Ubuntu 22.04，2核2G，北京） |
+| 运行方式 | systemd 服务 `handwriting`（开机自启 + 崩溃 5 秒自动重启） |
+| Node.js | v20.18.1（安装于 /usr/local/node） |
+| 应用目录 | /opt/handwriting（数据保存在 /opt/handwriting/data，**重启不丢失**） |
+| 验证结果 | ✅ 健康检查/首页/学生端/家长端/家长登录/孩子注册/学生登录 全部通过 |
 
-> 前置说明：此前 GitHub Actions + Cloudflare 隧道方案为**临时演示**（地址 3 小时变化、数据易丢），现已用 Zeabur 正式方案替代。临时演示地址 15:09 起有效，约 18:09 关闭。
+### 服务器运维速查（SSH 登录后）
+
+```bash
+systemctl status handwriting    # 查看运行状态
+systemctl restart handwriting   # 重启服务
+journalctl -u handwriting -n 50 # 查看最近日志
+cd /opt/handwriting && git pull 2>/dev/null; systemctl restart handwriting  # 更新代码（如需）
+```
+
+> 历史说明：此前用过 GitHub Actions + Cloudflare 隧道（临时演示）与 Zeabur 免费方案（免费层已改版不可用），均已废弃，正式采用阿里云服务器。
 
 ## 为什么选 Zeabur
 
