@@ -1,0 +1,3 @@
+*.pem -text
+*.crt -text
+*.key -text
