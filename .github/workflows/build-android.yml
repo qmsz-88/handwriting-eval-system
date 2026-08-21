@@ -19,20 +19,17 @@ jobs:
         with:
           node-version: 20
 
+      - name: 配置 JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: 安装 Python + Pillow
         run: pip install Pillow
 
       - name: 生成 Android 图标和启动屏
         run: python generate-android-assets.py
-
-      - name: 生成 Gradle Wrapper
-        working-directory: android
-        run: |
-          # 下载 gradle-wrapper.jar（约60KB）
-          curl -sL -o gradle/wrapper/gradle-wrapper.jar \
-            https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradle-wrapper.jar
-          chmod +x gradlew
-          echo "gradle-wrapper.jar downloaded: $(wc -c < gradle/wrapper/gradle-wrapper.jar) bytes"
 
       - name: 安装依赖
         run: npm install
@@ -40,26 +37,16 @@ jobs:
       - name: 同步 Web 资源到 Android 工程
         run: npx cap sync android || true
 
-      - name: 配置 JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: 配置 Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: |
-            platform-tools
-            platforms;android-33
-            build-tools;33.0.2
-
-      - name: 接受 SDK 许可
-        run: yes | sdkmanager --licenses > /dev/null || true
+      - name: 安装 Android SDK 组件并接受许可
+        run: |
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager "platforms;android-33" "build-tools;33.0.2" "platform-tools" || true
 
       - name: 构建 Debug APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
 
       - name: 上传 APK 构建产物
         uses: actions/upload-artifact@v4
