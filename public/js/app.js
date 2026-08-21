@@ -22,6 +22,91 @@ const state = {
   pageHistory: []
 };
 
+// ========== 服务器地址配置 ==========
+// APK 内默认指向公网服务器；浏览器/PWA 同源场景默认相对路径；用户可在登录页「服务器设置」中修改
+const DEFAULT_SERVER_URL = 'https://soon-tags-game-ancient.trycloudflare.com';
+
+function isNativeApp() {
+  return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+}
+
+// 返回 API 根地址（含 /api 后缀）
+function getApiBase() {
+  const custom = (localStorage.getItem('server_url') || '').trim().replace(/\/+$/, '');
+  if (custom) return custom + '/api';
+  if (isNativeApp()) return DEFAULT_SERVER_URL + '/api';
+  return '/api';
+}
+
+// ========== 服务器设置弹窗（登录页底部入口） ==========
+function initServerSettingsLink() {
+  const loginPage = document.getElementById('page-login');
+  if (!loginPage) return;
+  const tip = loginPage.querySelector('.login-tip');
+  if (!tip || loginPage.querySelector('.server-settings-link')) return;
+  const link = document.createElement('div');
+  link.className = 'server-settings-link';
+  link.style.cssText = 'text-align:center;margin-top:10px;font-size:12px;color:#9aa0a6;cursor:pointer;user-select:none;';
+  link.textContent = '服务器设置';
+  link.addEventListener('click', openServerSettings);
+  tip.after(link);
+}
+
+function openServerSettings() {
+  const old = document.getElementById('server-settings-modal');
+  if (old) old.remove();
+  const modal = document.createElement('div');
+  modal.id = 'server-settings-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#fff;border-radius:14px;padding:22px;width:86%;max-width:360px;box-shadow:0 8px 30px rgba(0,0,0,.18);';
+  const title = document.createElement('div');
+  title.style.cssText = 'font-size:16px;font-weight:600;color:#222;margin-bottom:6px;';
+  title.textContent = '服务器设置';
+  const desc = document.createElement('div');
+  desc.style.cssText = 'font-size:12px;color:#888;margin-bottom:12px;line-height:1.6;';
+  desc.textContent = '用于 APK 内连接服务器。留空则使用默认公网服务器；PWA/浏览器同源访问无需设置。';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = localStorage.getItem('server_url') || '';
+  input.placeholder = 'https://xxx.trycloudflare.com';
+  input.style.cssText = 'width:100%;box-sizing:border-box;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:14px;outline:none;';
+  const err = document.createElement('div');
+  err.style.cssText = 'color:#e74c3c;font-size:12px;margin-top:6px;display:none;';
+  const btns = document.createElement('div');
+  btns.style.cssText = 'display:flex;gap:10px;margin-top:16px;';
+  const ok = document.createElement('button');
+  ok.textContent = '保存';
+  ok.style.cssText = 'flex:1;background:linear-gradient(135deg,#4a90d9,#3a7bd5);color:#fff;border:none;border-radius:8px;padding:10px;font-size:14px;cursor:pointer;';
+  const cancel = document.createElement('button');
+  cancel.textContent = '取消';
+  cancel.style.cssText = 'flex:1;background:#f2f3f5;color:#555;border:none;border-radius:8px;padding:10px;font-size:14px;cursor:pointer;';
+  btns.appendChild(ok);
+  btns.appendChild(cancel);
+  box.appendChild(title);
+  box.appendChild(desc);
+  box.appendChild(input);
+  box.appendChild(err);
+  box.appendChild(btns);
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+  input.focus();
+  ok.onclick = () => {
+    const v = input.value.trim().replace(/\/+$/, '');
+    if (v && !/^https?:\/\//.test(v)) {
+      err.textContent = '地址需以 http:// 或 https:// 开头';
+      err.style.display = 'block';
+      return;
+    }
+    if (v) localStorage.setItem('server_url', v);
+    else localStorage.removeItem('server_url');
+    modal.remove();
+    alert('已保存。服务器地址：' + (v || (isNativeApp() ? DEFAULT_SERVER_URL : '当前站点(同源)')) + '\n重新登录后生效。');
+  };
+  cancel.onclick = () => modal.remove();
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+}
+
 // ========== 会话持久化 ==========
 function sessionKey() {
   return 'hw_session_' + (APP_MODE || 'default');
@@ -46,7 +131,7 @@ async function tryRestoreSession() {
   try {
     if (raw.sessionType === 'student' && raw.token) {
       // 学生身份：用令牌换取最新档案信息
-      const res = await fetch('/api/auth/me', { headers: { 'x-student-token': raw.token } });
+      const res = await fetch(getApiBase() + '/auth/me', { headers: { 'x-student-token': raw.token } });
       const data = await res.json();
       if (res.status !== 200 || data.code !== 0) { clearSession(); return false; }
       state.sessionType = 'student';
@@ -56,7 +141,7 @@ async function tryRestoreSession() {
       state.children = [data.data.child];
       return true;
     } else if (raw.userId) {
-      const res = await fetch('/api/auth/me', { headers: { 'x-user-id': raw.userId } });
+      const res = await fetch(getApiBase() + '/auth/me', { headers: { 'x-user-id': raw.userId } });
       const data = await res.json();
       if (res.status !== 200 || data.code !== 0) { clearSession(); return false; }
       state.sessionType = 'parent';
@@ -72,7 +157,7 @@ async function tryRestoreSession() {
 
 // ========== API 客户端 ==========
 const API = {
-  baseURL: '/api',
+  get baseURL() { return getApiBase(); },
   async request(method, path, body, isFormData) {
     const headers = {};
     if (state.studentToken) headers['x-student-token'] = state.studentToken;
@@ -1906,6 +1991,7 @@ function bindEvents() {
 
 // ========== 初始化 ==========
 bindEvents();
+initServerSettingsLink();
 
 // 自动恢复登录会话
 (async function init() {
