@@ -823,9 +823,37 @@ app.get('*', (req, res) => {
 });
 
 // ---- 启动 ----
-app.listen(PORT, () => {
+const httpServer = app.listen(PORT, () => {
   console.log(`\n========================================`);
   console.log(`  中小学生字体书写智能评价系统`);
-  console.log(`  服务已启动: http://localhost:${PORT}`);
+  console.log(`  HTTP 服务已启动: http://localhost:${PORT}`);
   console.log(`========================================\n`);
 });
+httpServer.on('error', (e) => {
+  console.error(`HTTP(${PORT}) 启动失败:`, e.message);
+  process.exit(1);
+});
+
+// ---- HTTPS（自签证书，证书存在时自动启用 443）----
+try {
+  const https = require('https');
+  const certFile = path.join(__dirname, 'certs', 'server.crt');
+  const keyFile = path.join(__dirname, 'certs', 'server.key');
+  if (fs.existsSync(certFile) && fs.existsSync(keyFile)) {
+    const httpsPort = parseInt(process.env.HTTPS_PORT || '443', 10);
+    const httpsServer = https.createServer(
+      { cert: fs.readFileSync(certFile), key: fs.readFileSync(keyFile) },
+      app
+    );
+    httpsServer.listen(httpsPort, () => {
+      console.log(`  HTTPS 服务已启动: https://localhost:${httpsPort} (自签证书)`);
+    });
+    httpsServer.on('error', (e) => {
+      console.warn(`  HTTPS(${httpsPort}) 启动失败（不影响 HTTP）:`, e.message);
+    });
+  } else {
+    console.log('  未发现 certs/server.crt，跳过 HTTPS 启动');
+  }
+} catch (e) {
+  console.warn('  HTTPS 启动失败（不影响 HTTP）:', e.message);
+}

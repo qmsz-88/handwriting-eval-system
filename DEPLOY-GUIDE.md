@@ -9,9 +9,10 @@
 
 | 项目 | 内容 |
 |---|---|
-| **正式公网地址** | **http://47.93.40.53** |
+| **正式公网地址** | **https://47.93.40.53**（推荐，自签证书加密）<br>http://47.93.40.53（兼容保留） |
 | 部署平台 | 阿里云轻量应用服务器（Ubuntu 22.04，2核2G，北京） |
 | 运行方式 | systemd 服务 `handwriting`（开机自启 + 崩溃 5 秒自动重启） |
+| HTTPS | 自签证书（有效期至 2036 年，SAN=IP:47.93.40.53），80/443 双端口监听；APK 已内置信任证书，无警告 |
 | Node.js | v20.18.1（安装于 /usr/local/node） |
 | 应用目录 | /opt/handwriting（数据保存在 /opt/handwriting/data，**重启不丢失**） |
 | 验证结果 | ✅ 健康检查/首页/学生端/家长端/家长登录/孩子注册/学生登录 全部通过 |
@@ -121,3 +122,26 @@ cd /opt/handwriting && git pull 2>/dev/null; systemctl restart handwriting  # �
 - 部署失败：查看服务页面 **日志（Logs）**，常见原因是网络拉取依赖超时，点击 **Redeploy** 重试即可
 - 域名打不开：确认已生成域名并等待证书签发；若仍不行，到「网域」重新生成
 - 其他问题：把日志或截图发给我，我帮你排查
+
+---
+
+## HTTPS（自签证书）说明与运维
+
+**方案**：因暂无已备案域名，采用自签证书（SAN=IP:47.93.40.53，有效期至 2036-08-18）。
+- 服务器：Node 同时监听 80（HTTP）与 443（HTTPS），证书位于 `/opt/handwriting/certs/`
+- APK：通过 `android/app/src/main/res/xml/network_security_config.xml` 内置信任
+  `res/raw/hw_server_cert.pem`，访问 `https://47.93.40.53` **无任何安全警告**
+- 浏览器：访问 https://47.93.40.53 会提示"不安全"（自签证书的正常表现），点击"继续访问"即可；APK/PWA 不受影响
+
+**后续升级正式域名 HTTPS（推荐）**：
+1. 阿里云注册域名（约 30~80 元/年）并完成 ICP 备案（1~2 周，免费）
+2. 备案通过后告诉我域名，我来配置 Let's Encrypt 免费证书 + 自动续期，届时浏览器也将无警告
+
+**证书相关运维**：
+```bash
+# 查看证书有效期
+openssl x509 -in /opt/handwriting/certs/server.crt -noout -dates
+# 更换证书：上传新 server.crt/server.key 到 /opt/handwriting/certs/ 后
+systemctl restart handwriting
+# 注意：更换证书后 APK 需重新打包内置新证书（res/raw/hw_server_cert.pem）
+```

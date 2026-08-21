@@ -26,3 +26,6 @@ ios/build/
 
 # Test files
 test-dual.js
+
+# TLS certs (private key must not be committed)
+certs/server.key

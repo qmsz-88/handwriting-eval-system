@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- 信任内置的自签证书（阿里云服务器 47.93.40.53） -->
+    <domain-config>
+        <domain includeSubdomains="false">47.93.40.53</domain>
+        <trust-anchors>
+            <certificates src="@raw/hw_server_cert"/>
+        </trust-anchors>
+    </domain-config>
+    <!-- 其余地址仍走系统默认信任链 -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+</network-security-config>
