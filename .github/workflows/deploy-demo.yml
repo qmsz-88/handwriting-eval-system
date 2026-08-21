@@ -1,4 +1,5 @@
 name: 临时公网演示环境
+# v3: 隧道启动后自动把公网地址写回仓库 PUBLIC_URL.txt，方便本地拉取
 on:
   workflow_dispatch:
   push:
