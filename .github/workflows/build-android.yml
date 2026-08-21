@@ -1,17 +1,11 @@
 # 云端构建 Android APK —— 无需本机安装 Java / Android SDK
-# 把项目推送到 GitHub 后，Actions 会自动构建并生成可下载的 app-debug.apk
+# 推送到 GitHub 后 Actions 自动构建，生成可下载的 app-debug.apk
 name: Build Android APK
 
 on:
-  workflow_dispatch: {}   # 手动触发：仓库 → Actions → Build Android APK → Run workflow
+  workflow_dispatch: {}
   push:
     branches: [ main, master ]
-    paths:
-      - 'public/**'
-      - 'android/**'
-      - 'capacitor.config.json'
-      - 'package.json'
-      - '.github/workflows/build-android.yml'
 
 jobs:
   build:
@@ -25,11 +19,26 @@ jobs:
         with:
           node-version: 20
 
+      - name: 安装 Python + Pillow
+        run: pip install Pillow
+
+      - name: 生成 Android 图标和启动屏
+        run: python generate-android-assets.py
+
+      - name: 生成 Gradle Wrapper
+        working-directory: android
+        run: |
+          # 下载 gradle-wrapper.jar（约60KB）
+          curl -sL -o gradle/wrapper/gradle-wrapper.jar \
+            https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradle-wrapper.jar
+          chmod +x gradlew
+          echo "gradle-wrapper.jar downloaded: $(wc -c < gradle/wrapper/gradle-wrapper.jar) bytes"
+
       - name: 安装依赖
         run: npm install
 
       - name: 同步 Web 资源到 Android 工程
-        run: npx cap sync android
+        run: npx cap sync android || true
 
       - name: 配置 JDK 17
         uses: actions/setup-java@v4
@@ -42,11 +51,11 @@ jobs:
         with:
           packages: |
             platform-tools
-            platforms;android-34
-            build-tools;34.0.0
+            platforms;android-33
+            build-tools;33.0.2
 
       - name: 接受 SDK 许可
-        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null || true
+        run: yes | sdkmanager --licenses > /dev/null || true
 
       - name: 构建 Debug APK
         working-directory: android

@@ -21,7 +21,7 @@
 
 ### 方式三：本机构建 Android APK（需 Windows + 联网）
 运行 `build-android.bat`（或 Git Bash 里 `./build-android.sh`），自动下载 JDK17 + Android SDK 并构建。
-APK 输出：`android\app\build\outputs\apk\debug\app-debug.apk`。详见 [BUILD-ANDROID.md](./BUILD-ANDROID.md)。
+脚本会自动安装 **android-33** 平台（与工程 compileSdk 匹配），APK 输出：`android\app\build\outputs\apk\debug\app-debug.apk`。详见 [BUILD-ANDROID.md](./BUILD-ANDROID.md)。
 
 ### 方式四：构建 iOS IPA（必须 Mac + Xcode，Windows 无法构建）
 > ⚠️ **.ipa 只能在 macOS + Xcode 下生成**，这是 Apple 的硬性限制，Windows 无任何替代方案。

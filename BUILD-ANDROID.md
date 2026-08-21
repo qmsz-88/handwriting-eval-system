@@ -1,7 +1,7 @@
 # Android APK 构建说明
 
-本机（当前沙箱）没有 Java / Android SDK，且无法联网下载工具链，因此**不能在此环境直接产出 .apk 文件**。
-下面三种方式任选其一，都能拿到可安装的 `app-debug.apk`。
+本机如果没有 Java / Android SDK，可用下面的方式构建。任选其一，都能拿到可安装的 `app-debug.apk`。
+> 注意：构建需要联网（下载工具链与依赖）；iOS `.ipa` 只能在 Mac 上构建，见 [BUILD-IOS.md](./BUILD-IOS.md)。
 
 > ⚠️ 注意：Debug APK 未签名（系统默认 debug 签名），安装时手机需开启"允许未知来源"。
 > 如需上架/分发，需另行生成正式签名 keystore 并用 `assembleRelease`。
@@ -49,6 +49,8 @@ build-android.bat
 
 - 成功后 APK 位于：`android/app/build/outputs/apk/debug/app-debug.apk`
 - 若某镜像慢/失败，脚本已内置阿里云、华为云镜像自动重试。
+- 脚本安装的 SDK 版本与工程一致：**android-33 平台 + build-tools 33.0.2**（对应 `android/variables.gradle` 的 `compileSdkVersion = 33`）。
+  > 若手动配置 SDK，请务必安装 **android-33**，安装 android-34 会导致 Gradle 找不到平台而构建失败。
 
 ---
 
@@ -83,6 +85,15 @@ A: 走方式一（云端）或方式三（Android Studio 通常更稳），或�
 ```
 systemProp.https.proxyHost=镜像
 ```
+
+**Q: 脚本报错 "platforms;android-33 未安装 / SDK location not found"？**
+A: 确认脚本下载的 SDK 版本是 `android-33`（不是 android-34）。也可手动执行：
+```
+sdkmanager "platforms;android-33" "build-tools;33.0.2" "platform-tools"
+```
+
+**Q: 下载 cmdline-tools 失败（国内网络）？**
+A: 脚本已内置华为云镜像。若仍失败，可手动下载 `commandlinetools-win-11076708_latest.zip` 放到 `C:\build-tools\` 后重跑脚本。
 
 **Q: 想要正式签名版（release APK）？**
 A: 生成 keystore 后改 `android/app/build.gradle` 的 signingConfigs，跑 `./gradlew assembleRelease`。
