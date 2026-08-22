@@ -1,7 +1,7 @@
 /**
  * Service Worker - 离线缓存与PWA安装支持（双端独立版）
  */
-const CACHE_NAME = 'hw-eval-v2';
+const CACHE_NAME = 'hw-eval-v3';
 const CORE_ASSETS = [
   '/',
   '/index.html',

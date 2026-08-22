@@ -38,6 +38,16 @@ function getApiBase() {
   return '/api';
 }
 
+// 将服务器返回的相对资源路径（如 /uploads/xx.png）转为绝对地址
+// APK 内页面运行在 https://localhost，相对路径会指向本地不存在的地址，导致图片无法显示
+function absUrl(url) {
+  if (!url) return url;
+  if (/^(https?:|data:|blob:)/i.test(url)) return url;
+  const custom = (localStorage.getItem('server_url') || '').trim().replace(/\/+$/, '');
+  const base = custom || (isNativeApp() ? DEFAULT_SERVER_URL : '');
+  return base + url;
+}
+
 // ========== 服务器设置弹窗（登录页底部入口） ==========
 function initServerSettingsLink() {
   const loginPage = document.getElementById('page-login');
@@ -579,10 +589,17 @@ async function renderDetectPage(type) {
       <div class="upload-area">
         <div class="upload-tips">💡 ${config.tips}<br>支持自动纠偏、裁边、去阴影</div>
         <div class="image-preview-grid" id="preview-grid"></div>
-        <div class="image-upload-zone" onclick="document.getElementById('image-input').click()">
-          <div class="upload-icon">📸</div>
-          <div class="upload-text"><strong>点击拍照/选择图片</strong><br>支持多张图片上传（最多9张）</div>
+        <div style="display:flex;gap:10px">
+          <div class="image-upload-zone" style="flex:1" onclick="document.getElementById('camera-input').click()">
+            <div class="upload-icon">📷</div>
+            <div class="upload-text"><strong>拍照上传</strong><br>调用相机拍摄作业</div>
+          </div>
+          <div class="image-upload-zone" style="flex:1" onclick="document.getElementById('image-input').click()">
+            <div class="upload-icon">🖼️</div>
+            <div class="upload-text"><strong>相册选择</strong><br>可多选（最多9张）</div>
+          </div>
         </div>
+        <input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none" onchange="handleImageSelect(event)">
         <input type="file" id="image-input" accept="image/*" multiple style="display:none" onchange="handleImageSelect(event)">
         ${type === 'practice' ? `
           <div class="custom-input-area mt-12">
@@ -781,7 +798,7 @@ async function renderResultPage(recordId) {
         <div class="section-title">原始拍照</div>
         <div class="card">
           <div class="image-preview-grid">
-            ${r.image_urls.map(url => `<div class="image-preview-item" onclick="openPreview('${url}')"><img src="${url}" alt="原图"></div>`).join('')}
+            ${r.image_urls.map(url => `<div class="image-preview-item" onclick="openPreview('${absUrl(url)}')"><img src="${absUrl(url)}" alt="原图"></div>`).join('')}
           </div>
         </div>
 
@@ -892,7 +909,7 @@ async function renderRecordsPage() {
 }
 
 function renderRecordItem(r) {
-  const thumb = r.image_urls && r.image_urls[0] ? r.image_urls[0] : '';
+  const thumb = r.image_urls && r.image_urls[0] ? absUrl(r.image_urls[0]) : '';
   const stars = r.parent_star ? '★'.repeat(r.parent_star) + '☆'.repeat(5 - r.parent_star) : '';
   return `
     <div class="record-item" onclick="navigateTo('recordDetail',{id:${r.id}})">
@@ -1328,7 +1345,7 @@ async function renderTracePage() {
 }
 
 function renderTraceItem(r) {
-  const thumb = r.image_urls && r.image_urls[0] ? r.image_urls[0] : '';
+  const thumb = r.image_urls && r.image_urls[0] ? absUrl(r.image_urls[0]) : '';
   const stars = r.parent_star ? '★'.repeat(r.parent_star) + '☆'.repeat(5 - r.parent_star) : '';
   return `
     <div class="record-item" onclick="navigateTo('recordDetail',{id:${r.id}})">
@@ -1391,7 +1408,7 @@ async function renderPendingPage() {
                   <span class="record-time">${formatDateShort(r.created_at)}</span>
                 </div>
                 <div class="record-body">
-                  <div class="record-thumb">${r.image_urls[0] ? `<img src="${r.image_urls[0]}" onclick="openPreview('${r.image_urls[0]}')">` : '📝'}</div>
+                  <div class="record-thumb">${r.image_urls[0] ? `<img src="${absUrl(r.image_urls[0])}" onclick="openPreview('${absUrl(r.image_urls[0])}')">` : '📝'}</div>
                   <div class="record-info">
                     <div class="record-score" style="color:${getScoreColor(r.ai_score)}">${r.ai_score}<small>/100</small></div>
                     <div class="record-attitude">${r.attitude || ''}</div>
@@ -1434,7 +1451,7 @@ async function showEvaluateModal(recordId) {
 
       <div style="background:#f9f9f9;border-radius:8px;padding:10px;margin-bottom:16px">
         <div style="font-size:12px;color:var(--text-3)">AI评分：${r.ai_score}分 | ${getTypeLabel(r.submit_type)} | ${formatDateShort(r.created_at)}</div>
-        ${r.image_urls[0] ? `<img src="${r.image_urls[0]}" style="width:100%;border-radius:8px;margin-top:8px" onclick="openPreview('${r.image_urls[0]}')">` : ''}
+        ${r.image_urls[0] ? `<img src="${absUrl(r.image_urls[0])}" style="width:100%;border-radius:8px;margin-top:8px" onclick="openPreview('${absUrl(r.image_urls[0])}')">` : ''}
       </div>
 
       <div class="modal-section">
